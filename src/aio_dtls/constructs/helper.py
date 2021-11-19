@@ -2,7 +2,7 @@ from construct import Prefixed, GreedyBytes, GreedyRange
 from construct import Struct, Int8ub, Int16ub, Bytes, Enum, Switch
 
 # from dtls.constructs_core import PrefixedBytes
-from aio_dtls.const import tls
+from ..const import tls
 
 # import enums
 

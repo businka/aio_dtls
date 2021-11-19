@@ -1,15 +1,15 @@
 import socket
 import ssl
-from aio_dtls.constructs import dtls
+import unittest
+
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import dh
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-import unittest
+from aio_dtls.constructs import dtls
 
 
 class Test1(unittest.TestCase):
@@ -99,13 +99,13 @@ class Test1(unittest.TestCase):
         from cryptography.fernet import Fernet
         from base64 import b64encode
         shared_key = b'\x9a\x17\xab\xe5\x16}\xbfSy\x97\x865\xd0\xa7X\xbd\xef\x91^\xeb\x90X\x16\x99\xc9\x88S\x96\xdb \xbd\xcb'
-        master_secret = bytearray(b'\xb0\xb2\xa6\nlB\xe2p\xf0Ux<\xe3\xa8ww3k@4aS\xe9cR\xb1\x02/cY\xe7R\xd9\x8e\xbf\xa1\xa3Z\xd2-@\xa66\xc4;\xae\xdcW')
+        master_secret = bytearray(
+            b'\xb0\xb2\xa6\nlB\xe2p\xf0Ux<\xe3\xa8ww3k@4aS\xe9cR\xb1\x02/cY\xe7R\xd9\x8e\xbf\xa1\xa3Z\xd2-@\xa66\xc4;\xae\xdcW')
         raw_dtls_record = b'\x16\xfe\xfd\x00\x00\x00\x00\x00\x00\x00\x04\x00N\x10\x00\x00B\x00\x02\x00\x00\x00\x00\x00BA\x04\xfb\xae\xbf\xe0\xf7{\xc5\x9f<t[8\x92\xc4i|}"\xa7\x07\xf8VN\xf1(s;\x9b\x87l=of\x81\xee\xbc\xc0\xb3t7\xf6P\xbfE\xc7\xb3\x17\xcfK2\xe2\xd6\x05\xc4A@dS\xb4\x95f\xe3\xa9]\x14\xfe\xfd\x00\x00\x00\x00\x00\x00\x00\x05\x00\x01\x01\x16\xfe\xfd\x00\x01\x00\x00\x00\x00\x00\x01\x00P\xe7\xcf\xeb\xccHp\x9e\xba\x8a\xc9\x14\xa9\xd3j\xf0\xed\x9d\xb6\xf6C\x87\xbd\xab\x9a\x85g\xa6\xa8W\x8bQv\xcd= Q\x0eH\x025EH:"\x1a\xd8\x07\xb5v\xf2\x13p\x96\xf3\xe7\xbaF\xe4\xde\x06\x01*\xee\xf7\xcf:\xa5Aw\xb0\xdbk\x92\xd8\x05\x96\xd4\xdb\xe4\xee'
         records = dtls.RawDatagram.parse(raw_dtls_record)
         # raw_handshake = dtls.GenericBlockCipher.parse(finish.fragment)
 
         finish = records[2].fragment
-
 
         a = b64encode(master_secret)
         f = Fernet(a)

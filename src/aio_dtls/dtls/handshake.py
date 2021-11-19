@@ -1,9 +1,9 @@
-from aio_dtls.connection_manager.connection import Connection
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.const import tls as const_tls
-from aio_dtls.constructs import dtls
 from . import helper as dtls_helper
 from .handshake_ecdh_anon import EcdhAnon
+from ..connection_manager.connection import Connection
+from ..connection_manager.connection_manager import ConnectionManager
+from ..const import tls as const_tls
+from ..constructs import dtls
 from ..tls.handshake import Handshake as TlsHandshake
 
 

@@ -4,12 +4,12 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 
-from aio_dtls.connection_manager.connection import Connection
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.const.tls import NamedCurve, ExtensionType, HandshakeType, CompressionMethod, ECCurveType
-from aio_dtls.constructs import tls
-from aio_dtls.constructs import tls_ecc
 from . import helper as tls_helper
+from ..connection_manager.connection import Connection
+from ..connection_manager.connection_manager import ConnectionManager
+from ..const.tls import NamedCurve, ExtensionType, HandshakeType, CompressionMethod, ECCurveType
+from ..constructs import tls
+from ..constructs import tls_ecc
 
 logger = logging.getLogger(__file__)
 

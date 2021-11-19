@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.dtls.handshake import Handshake
-from aio_dtls.dtls.protocol import DTLSProtocol
+from ..connection_manager.connection_manager import ConnectionManager
+from ..dtls.handshake import Handshake
+from ..dtls.protocol import DTLSProtocol
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,7 @@
 # from tests.demo_server import DemoServer, DemoEndpoint, DemoProtocolClass, ClientEndpoint
+from aio_dtls.connection_manager.connection import Connection
 from tests.data import tls_lite_ng as demo
-from aio_dtls import ConnectionManager
-from aio_dtls.connection_manager.connection import Connection, TLSConnectionState
 from tests.tls_helper import TlsHelper
-from aio_dtls.constructs.dtls import Plaintext, ClientHello, HelloVerifyRequest, RawHandshake, RawPlaintext, \
-    RawDatagram, Datagram
 
 
 class TestTlsHandshake(TlsHelper):

@@ -1,8 +1,7 @@
 import unittest
-import unittest
-from tests.dtls_test_obj import DemoDtlsSocket, DemoDtlsEndpoint, DemoProtocolClass, DemoSocket, DemoConnectionManager
-from aio_dtls.constructs.dtls import Plaintext, ClientHello, HelloVerifyRequest, RawHandshake, RawPlaintext, \
-    RawDatagram, Datagram
+
+from aio_dtls.constructs.dtls import Plaintext, Datagram
+from tests.dtls_test_obj import DemoDtlsEndpoint, DemoProtocolClass
 
 
 class DtlsHelper(unittest.TestCase):
@@ -12,7 +11,8 @@ class DtlsHelper(unittest.TestCase):
         self.server_address = ('192.168.1.13', 20103)
 
         self.server_endpoint = DemoDtlsEndpoint(address=self.server_address)
-        self.client_endpoint = DemoDtlsEndpoint(address=self.client_address, ciphers=['TLS_ECDH_anon_WITH_AES_128_CBC_SHA256'])
+        self.client_endpoint = DemoDtlsEndpoint(address=self.client_address,
+                                                ciphers=['TLS_ECDH_anon_WITH_AES_128_CBC_SHA256'])
 
         self.client_endpoint.listen(DemoProtocolClass)
         self.server_endpoint.listen(DemoProtocolClass)

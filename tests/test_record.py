@@ -1,14 +1,11 @@
 from __future__ import absolute_import, division, print_function
 
-# from construct.adapters import ValidationError
-
-# from construct.core import FieldError
-
-import pytest
-
 from dtls import enums
+from dtls.record import (TLSPlaintext)  # TLSCiphertext, TLSCompressed,
 
-from dtls.record import (ProtocolVersion, TLSPlaintext)  # TLSCiphertext, TLSCompressed,
+
+# from construct.adapters import ValidationError
+# from construct.core import FieldError
 
 
 class TestDTLSPlaintextParsing(object):

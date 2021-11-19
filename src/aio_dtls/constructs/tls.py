@@ -5,9 +5,9 @@ from collections import namedtuple
 from construct import Prefixed, Int32ub, GreedyBytes, GreedyRange, Default, RepeatUntil
 from construct import Struct, Int8ub, Int16ub, Int24ub, Bytes, Enum, Byte, Switch, If, this
 
-from aio_dtls.const import cipher_suites
-from aio_dtls.const import tls as const_tls
-from aio_dtls.constructs.helper import Extensions
+from .helper import Extensions
+from ..const import cipher_suites
+from ..const import tls as const_tls
 
 CipherSuite = Enum(Int16ub, cipher_suites.CipherSuites)
 CipherSuites = Prefixed(Int16ub, GreedyRange(CipherSuite))

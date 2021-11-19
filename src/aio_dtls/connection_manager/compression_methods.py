@@ -1,4 +1,4 @@
-from aio_dtls.const import tls
+from ..const import tls
 
 
 class CompressionMethods:

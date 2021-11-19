@@ -4,7 +4,6 @@ from .. import math
 from ..connection_manager.connection import Connection
 from ..const import tls as const_tls
 from ..constructs.dtls import RawHandshake, AnswerRecord, RawPlaintext
-from ..const.handshake import ConnectionState
 
 logger = logging.getLogger(__file__)
 

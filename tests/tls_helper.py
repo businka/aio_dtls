@@ -1,7 +1,8 @@
 import unittest
-from tests.tls_test_obj import DemoTlsSocket, DemoConnectionManager
-from aio_dtls.tls.protocol import TLSProtocol
+
 from aio_dtls.constructs import tls
+from aio_dtls.tls.protocol import TLSProtocol
+from tests.tls_test_obj import DemoTlsSocket, DemoConnectionManager
 
 
 #     RawDatagram, Datagram
@@ -53,6 +54,7 @@ class TlsHelper(unittest.IsolatedAsyncioTestCase):
         answer = socket._writer.send_data[-1]
         answer_data = tls.Datagram.parse(answer)
         trust_answer_data = tls.Datagram.parse(trust_answer)
-        self.assertEqual(len(trust_answer_data), len(answer_data), f'count answer record {request_data[0].type} {request_data[0].fragment.handshake_type}')
+        self.assertEqual(len(trust_answer_data), len(answer_data),
+                         f'count answer record {request_data[0].type} {request_data[0].fragment.handshake_type}')
         self.assertEqual(trust_answer, answer, f'{request_data[0].type} {request_data[0].fragment.handshake_type}')
         return answer

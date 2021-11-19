@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import setuptools
+
 from src.aio_dtls import __version__
 
 with open("readme.md", "r", encoding="utf-8") as fh:

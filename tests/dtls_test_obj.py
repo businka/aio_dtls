@@ -1,7 +1,8 @@
-from aio_dtls import ConnectionManager, DtlsSocket
 from datetime import datetime
-from aio_dtls.dtls.protocol import DTLSProtocol
+
+from aio_dtls import ConnectionManager, DtlsSocket
 from aio_dtls.constructs.tls import Random
+from aio_dtls.dtls.protocol import DTLSProtocol
 
 
 class DemoProtocolClass:

@@ -2,13 +2,13 @@ import logging
 from asyncio import Protocol
 from typing import Optional, List
 
-from aio_dtls.connection_manager.connection import Connection
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.const import handshake as const_handshake
-from aio_dtls.const.tls import HandshakeType, ConnectionEnd
-from aio_dtls.constructs import tls
 from . import helper as tls_helper
 from .handshake import Handshake
+from ..connection_manager.connection import Connection
+from ..connection_manager.connection_manager import ConnectionManager
+from ..const import handshake as const_handshake
+from ..const.tls import HandshakeType, ConnectionEnd
+from ..constructs import tls
 
 logger = logging.getLogger(__name__)
 

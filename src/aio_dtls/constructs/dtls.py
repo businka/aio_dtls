@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from construct import Struct, Int8ub, Int16ub, Int24ub, BytesInteger, Bytes, Enum, Byte, Switch, Prefixed, \
-    GreedyBytes, IfThenElse, GreedyRange, Default, this
+    GreedyBytes, IfThenElse, GreedyRange, Default
 
 from . import tls
 from .helper import Extensions

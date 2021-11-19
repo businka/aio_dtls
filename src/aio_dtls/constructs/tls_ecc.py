@@ -1,7 +1,7 @@
 from construct import Prefixed, GreedyBytes, Default, Pointer
 from construct import Struct, Int8ub, Int16ub, Enum, Switch
 
-from aio_dtls.const import tls
+from ..const import tls
 
 ServerDHParams = Struct(
     "dh_p" / Prefixed(Int16ub, GreedyBytes),

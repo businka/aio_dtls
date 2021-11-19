@@ -1,13 +1,13 @@
 import logging
 
-from aio_dtls.connection_manager.connection import Connection
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.const import tls as const_tls
-from aio_dtls.const.cipher_suites import CipherSuite, CipherSuites
-from aio_dtls.constructs import tls
 from . import helper as tls_helper
 from .handshake_ecdh_anon import EcdhAnon
 from .handshake_ecdhe_ecdsa import EcdheEcdsa
+from ..connection_manager.connection import Connection
+from ..connection_manager.connection_manager import ConnectionManager
+from ..const import tls as const_tls
+from ..const.cipher_suites import CipherSuite, CipherSuites
+from ..constructs import tls
 
 logger = logging.getLogger(__file__)
 

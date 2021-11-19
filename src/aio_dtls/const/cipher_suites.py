@@ -8,8 +8,8 @@ from enum import Enum
 
 from cryptography.hazmat.primitives import hashes
 
-from aio_dtls.exceptions import UnsupportedCipherException
 from ..cipher import cipher
+from ..exceptions import UnsupportedCipherException
 
 
 # from .cryptographic_primitive import cryptography_primitives

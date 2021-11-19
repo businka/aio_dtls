@@ -1,9 +1,9 @@
-import unittest
 import asyncio
+import unittest
 from socket import AF_INET, IPPROTO_UDP, SOCK_DGRAM, socket
 
-from tests.dtls_test_obj import DemoProtocolClass
 from aio_dtls.dtls.socket import DtlsSocket
+from tests.dtls_test_obj import DemoProtocolClass
 
 
 class DemoDtlsEndpoint2:

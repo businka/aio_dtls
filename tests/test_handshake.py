@@ -1,6 +1,7 @@
 import unittest
-from test.demo_server import DemoServer, DemoEndpoint, DemoProtocolClass
+
 from aio_dtls.protocol_dtls import DTLSProtocol
+from test.demo_server import DemoServer, DemoEndpoint, DemoProtocolClass
 
 
 class TestHandshake(unittest.TestCase):
@@ -10,8 +11,6 @@ class TestHandshake(unittest.TestCase):
         self.protocol = DTLSProtocol(self.server, self.server.connection_manager, self.endpoint, DemoProtocolClass)
 
     def test_generate_hello_verify_request(self):
-
-
         client_hello_empty_cookie = b'\x16\xfe\xfd\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x01\x00\x00V\x00\x00\x00\x00\x00\x00\x00V\xfe\xfdaD\xb8r\x07L\xcf\xd6\xa1L?\x1e\xb6\x8c\x0cev\x8bd\x1c9\x88\xb3c\xf0\xe87@>g&\x84\x00\x00\x00\x04\xff\x00\x00\xff\x01\x00\x00(\x00\r\x00\x12\x00\x10\x06\x03\x06\x01\x05\x03\x05\x01\x04\x03\x04\x01\x03\x03\x03\x01\x00\n\x00\x04\x00\x02\x00\x17\x00\x0b\x00\x02\x01\x00\x00\x17\x00\x00'
         client = ('192.168.1.18', 20102)
         self.protocol.datagram_received(client_hello_empty_cookie, client)

@@ -2,9 +2,9 @@ import asyncio
 import logging
 from typing import Optional
 
-from aio_dtls.connection_manager.connection_manager import ConnectionManager
-from aio_dtls.tls.handshake import Handshake
-from aio_dtls.tls.protocol import TLSProtocol
+from ..connection_manager.connection_manager import ConnectionManager
+from ..tls.handshake import Handshake
+from ..tls.protocol import TLSProtocol
 
 logger = logging.getLogger(__name__)
 

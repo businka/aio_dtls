@@ -1,9 +1,5 @@
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from aio_dtls import DtlsSocket
-from tests.dtls_helper import DtlsHelper
 from tests.data import iotivity_simple_server as iotivity_simple
-from tests.dtls_test_obj import DemoServer, DemoProtocolClass, DemoDtlsEndpoint, DemoDtlsSocket
-import unittest
+from tests.dtls_helper import DtlsHelper
 
 
 class TestDtlsClient(DtlsHelper):

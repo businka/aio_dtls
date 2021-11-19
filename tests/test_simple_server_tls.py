@@ -1,12 +1,12 @@
-import unittest
 import asyncio
 import logging
+import unittest
 
-from tests.dtls_test_obj import DemoProtocolClass
-from aio_dtls.tls.socket import TlsSocket
-from aio_dtls.constructs import tls
 from aio_dtls.const import tls as const
 from aio_dtls.const.cipher_suites import CipherSuites
+from aio_dtls.constructs import tls
+from aio_dtls.tls.socket import TlsSocket
+from tests.dtls_test_obj import DemoProtocolClass
 
 logging.basicConfig()
 logger = logging.getLogger()
