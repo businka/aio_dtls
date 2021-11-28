@@ -1,9 +1,9 @@
 import logging
 from asyncio import DatagramProtocol
-from typing import List
+from typing import Optional
 
-from . import helper as dtls_helper
 from .handshake import Handshake
+from .helper import Helper
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const import handshake as const_handshake
@@ -25,7 +25,7 @@ class DTLSProtocol(DatagramProtocol):
         self.connection_manager = connection_manager
         self.endpoint = endpoint
         self.app_protocol = protocol_factory(server, endpoint)
-        self.connection: Connection = None
+        self.connection: Optional[Connection] = None
         # self.record: Datagram = None
         self.sender_address = None
 
@@ -55,9 +55,7 @@ class DTLSProtocol(DatagramProtocol):
                 answers.extend(answer)
             # todo как минимум надо проверять размер ответа
         if answers:
-            plaintext = self.build_plaintext(self.connection, answers)
-            self.endpoint.raw_sendto(plaintext, sender_address)
-        pass
+            Helper.send_records(self.connection, answers, self.endpoint.raw_sendto)
 
     def received_handshake(self, record):
         if self.connection.state.value == const_handshake.ConnectionState.HANDSHAKE_OVER:
@@ -90,26 +88,11 @@ class DTLSProtocol(DatagramProtocol):
         raise Exception(f'TLS {alert.level} {alert.description}')
         pass
 
-    @classmethod
-    def build_plaintext(cls, connection: Connection, records_data: List[tls.AnswerRecord]):
-        records = []
-        for record in records_data:
-            records.append({
-                "type": record.content_type,
-                "version": connection.ssl_version.value,
-                "epoch": record.epoch,
-                "sequence_number": connection.get_sequence_number(record.epoch),
-                "fragment": record.fragment
-            })
-
-        plaintext = dtls.RawDatagram.build(records)
-        return plaintext
-
     def received_application_data(self, record: tls.RawPlaintext):
         try:
-            data = tls_helper.decrypt_ciphertext_fragment(self.connection, record, dtls_helper)
+            data = Helper.decrypt_ciphertext_fragment(self.connection, record)
         except tls_helper.BadMAC:
-            answer = [tls_helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
+            answer = [Helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
             self.connection_manager.terminate_connection(self.connection)
             return answer
         if self.app_protocol:

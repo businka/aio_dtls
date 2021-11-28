@@ -1,20 +1,20 @@
 import logging
 
-from . import helper as tls_helper
 from .handshake_ecdh_anon import EcdhAnon
 from .handshake_ecdhe_ecdsa import EcdheEcdsa
+from .helper import Helper, BadMAC
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const import tls as const_tls
 from ..const.cipher_suites import CipherSuite, CipherSuites
 from ..constructs import tls
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class Handshake:
     tls = tls
-    tls_helper = tls_helper
+    helper = Helper
     handlers = {
         'ECDH_ANON': EcdhAnon,
         'ECDHE_ECDSA': EcdheEcdsa
@@ -116,7 +116,7 @@ class Handshake:
         connection.cipher = best_cipher
         # todo добавить проверку если нет подходящего
 
-        extensions = tls_helper.extensions_to_dict(client_hello_data.extension)
+        extensions = cls.helper.extensions_to_dict(client_hello_data.extension)
 
         # todo добавить проверку если сервер не хочет
         connection.handshake_params.extended_master_secret = const_tls.ExtensionType.EXTENDED_MASTER_SECRET.name in extensions
@@ -134,7 +134,7 @@ class Handshake:
         connection.security_params.server_random = server_hello_data.random
         connection.cipher = CipherSuites[server_hello_data.cipher_suite]
 
-        extensions = tls_helper.extensions_to_dict(server_hello_data.extension)
+        extensions = cls.helper.extensions_to_dict(server_hello_data.extension)
 
         ext_master_secret = const_tls.ExtensionType.EXTENDED_MASTER_SECRET.name
         connection.handshake_params.extended_master_secret = ext_master_secret in extensions
@@ -154,18 +154,18 @@ class Handshake:
         handler = cls.get_handshake_handler(connection.cipher)
         answer = handler.received_server_hello_done(connection_manager, connection, record)
 
-        connection.security_params.master_secret = tls_helper.generate_master_secret(connection)
+        connection.security_params.master_secret = cls.helper.generate_master_secret(connection)
 
-        tls_helper.calc_pending_states(connection)
+        cls.helper.calc_pending_states(connection)
         fragment_client_finished = cls.build_handshake_fragment_finished(connection)
         connection.update_handshake_hash(fragment_client_finished, name='client finished')
-        fragment_client_finished = tls_helper.encrypt_ciphertext_fragment(
-            connection, fragment_client_finished, cls.tls_helper)
+        fragment_client_finished = cls.helper.encrypt_ciphertext_fragment(
+            connection, const_tls.ContentType.HANDSHAKE, fragment_client_finished)
 
         logger.debug(f'fragment_client_finished {fragment_client_finished.hex(" ")}')
 
         logger.debug('build client finished')
-        answer.append(cls.tls_helper.build_handshake_answer(connection, fragment_client_finished))
+        answer.append(cls.helper.build_handshake_answer(connection, fragment_client_finished))
         return answer
         pass
 
@@ -178,38 +178,38 @@ class Handshake:
 
     @classmethod
     def received_client_finished(cls, connection_manager: ConnectionManager, connection: Connection, record):
-        tls_helper.calc_pending_states(connection)
+        cls.helper.calc_pending_states(connection)
         logger.debug(f'receive encrypted client finished {record.fragment.hex(" ")}')
         try:
-            block_cipher = tls_helper.decrypt_ciphertext_fragment(connection, record, cls.tls_helper)
-        except tls_helper.BadMAC:
-            answer = [tls_helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
+            block_cipher = cls.helper.decrypt_ciphertext_fragment(connection, record)
+        except BadMAC:
+            answer = [cls.helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
             connection_manager.terminate_connection(connection)
             return answer
         logger.debug(f'receive client finished {block_cipher.block_ciphered.content.hex(" ")}')
         handshake_data = cls.tls.Handshake.parse(block_cipher.block_ciphered.content)
         incoming_verify_data = handshake_data.fragment.verify_data
 
-        verify_data = tls_helper.generate_finished_verify_data(connection, b'client finished')
+        verify_data = cls.helper.generate_finished_verify_data(connection, b'client finished')
 
         if incoming_verify_data != verify_data:
             logger.debug(f'verify data {verify_data.hex(" ")}')
             logger.debug(f'incoming verify data {incoming_verify_data.hex(" ")}')
             answer = [
-                tls_helper.build_alert(const_tls.AlertLevel.ALERT_MESSAGE, const_tls.AlertDescription.ENCRYPTED_ALERT)]
+                cls.helper.build_alert(const_tls.AlertLevel.ALERT_MESSAGE, const_tls.AlertDescription.ENCRYPTED_ALERT)]
             connection_manager.terminate_connection(connection)
             return answer
 
-        answer = [cls.tls_helper.build_change_cipher(connection)]
+        answer = [cls.helper.build_change_cipher(connection)]
 
         connection.update_handshake_hash(block_cipher.block_ciphered.content, name='client finished')
 
         fragment_server_finished = cls.build_handshake_fragment_finished(connection)
         # connection.update_handshake_hash(fragment_server_finished, name='server finished')
-        fragment_server_finished = tls_helper.encrypt_ciphertext_fragment(
-            connection, fragment_server_finished, cls.tls_helper)
+        fragment_server_finished = cls.helper.encrypt_ciphertext_fragment(
+            connection, const_tls.ContentType.HANDSHAKE, fragment_server_finished)
 
-        answer.append(cls.tls_helper.build_handshake_answer(connection, fragment_server_finished))
+        answer.append(cls.helper.build_handshake_answer(connection, fragment_server_finished))
 
         return answer
 
@@ -219,33 +219,33 @@ class Handshake:
         is_client = connection.security_params.entity == const_tls.ConnectionEnd.client
         label = b'client finished' if is_client else b'server finished'
 
-        verify_data = tls_helper.generate_finished_verify_data(connection, label)
+        verify_data = cls.helper.generate_finished_verify_data(connection, label)
 
         logger.debug(f'verify data: {verify_data.hex(" ")}')
 
-        fragment = cls.tls_helper.build_handshake_fragment(connection, const_tls.HandshakeType.FINISHED,
-                                                           tls.Finished.build({'verify_data': verify_data}))
+        fragment = cls.helper.build_handshake_fragment(connection, const_tls.HandshakeType.FINISHED,
+                                                   tls.Finished.build({'verify_data': verify_data}))
 
         logger.debug(f'finished: {fragment.hex(" ")}')
         return fragment
 
     @classmethod
     def received_server_finished(cls, connection_manager: ConnectionManager, connection: Connection, record):
-        block_cipher = tls_helper.decrypt_ciphertext_fragment(connection, record, cls.tls_helper)
+        block_cipher = cls.helper.decrypt_ciphertext_fragment(connection, record)
         handshake_data = cls.tls.Handshake.parse(block_cipher.block_ciphered.content)
         incoming_verify_data = handshake_data.fragment.verify_data
         logger.debug(f'handshake msg server finished {connection.handshake_params.full_handshake_messages.hex(" ")}')
-        verify_data = tls_helper.generate_finished_verify_data(connection, b'server finished')
+        verify_data = cls.helper.generate_finished_verify_data(connection, b'server finished')
 
         if incoming_verify_data != verify_data:
             raise Exception('wrong verify data')  # todo return Alert
 
-        mac = tls_helper.build_mac(connection, record, connection.server_mac_func,
-                                   const_tls.ContentType.HANDSHAKE.value, block_cipher.block_ciphered.content)
+        mac = cls.helper.build_mac(connection, record, connection.server_mac_func,
+                               const_tls.ContentType.HANDSHAKE.value, block_cipher.block_ciphered.content)
 
         if block_cipher.block_ciphered.MAC != mac:
-            answer = [tls_helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
+            answer = [cls.helper.build_alert(const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
             connection_manager.terminate_connection(connection)
             return answer
 
-        return
+        return cls.helper.build_application_record(connection, connection.flight_buffer)

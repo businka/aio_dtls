@@ -1,5 +1,5 @@
-from . import helper as dtls_helper
 from .handshake_ecdh_anon import EcdhAnon
+from .helper import Helper
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const import tls as const_tls
@@ -9,7 +9,7 @@ from ..tls.handshake import Handshake as TlsHandshake
 
 class Handshake(TlsHandshake):
     tls = dtls
-    tls_helper = dtls_helper
+    helper = Helper
     handlers = {
         'ECDH_ANON': EcdhAnon
     }
@@ -31,7 +31,7 @@ class Handshake(TlsHandshake):
         data = Handshake.build_client_hello_fragment_data(connection_manager, connection)
         data['cookie'] = connection.cookie
         fragment = dtls.ClientHello.build(data)
-        return dtls_helper.build_handshake_record(connection, const_tls.HandshakeType.CLIENT_HELLO, fragment, True)
+        return cls.helper.build_handshake_record(connection, const_tls.HandshakeType.CLIENT_HELLO, fragment, True)
 
     @classmethod
     def build_hello_verify_request(cls, connection_manager: ConnectionManager, connection: Connection, record,
@@ -41,9 +41,9 @@ class Handshake(TlsHandshake):
             cookie=trust_cookie
         ))
         return [
-            dtls_helper.build_handshake_record(connection, const_tls.HandshakeType.HELLO_VERIFY_REQUEST,
-                                               _hello_verify_request
-                                               )]
+            cls.helper.build_handshake_record(connection, const_tls.HandshakeType.HELLO_VERIFY_REQUEST,
+                                              _hello_verify_request
+                                              )]
 
     @classmethod
     def received_client_hello(cls, connection_manager: ConnectionManager, connection: Connection, record):

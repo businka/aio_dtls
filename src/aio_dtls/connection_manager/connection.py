@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives import hashes
 from ..const.cipher_suites import MACAlgorithm
 from ..const.tls import NamedCurve, CompressionMethod, ConnectionEnd, PRFAlgorithm, BulkCipherAlgorithm
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 # from ..const.handshake import M
@@ -154,6 +154,8 @@ class Connection:
         self.message_seq = 0
         self.epoch = 0
 
+        self.flight_buffer = []
+
     @property
     def id(self):
         return self.get_id(self.address)
@@ -199,7 +201,7 @@ class Connection:
         #         self.handshake_params.handshake_hash = digest.finalize()
         if clear:
             self.handshake_params.handshake_messages = []
-            logging.debug(f'clear handshake hash')
+            logger.debug(f'clear handshake hash')
         logger.debug(f'update handshake {name} buf ({len(message)}) {message.hex(" ")}')
         self.handshake_params.handshake_messages.append(message)
 

@@ -4,19 +4,19 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 
-from . import helper as tls_helper
+from .helper import Helper
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const.tls import NamedCurve, ExtensionType, HandshakeType, CompressionMethod, ECCurveType
 from ..constructs import tls
 from ..constructs import tls_ecc
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class EcdhAnon:
     tls_construct = tls
-    tls_helper = tls_helper
+    helper = Helper
 
     @classmethod
     def build_handshake_fragment_server_hello(cls, connection_manager: ConnectionManager, connection: Connection):
@@ -162,13 +162,13 @@ class EcdhAnon:
             connection.ec = NamedCurve(int(ext_ec_data.elliptic_curve_list[0]))
             answer = []
             fragment = cls.build_handshake_fragment_server_hello(connection_manager, connection)
-            answer.append(cls.tls_helper.build_handshake_record(connection, HandshakeType.SERVER_HELLO, fragment))
+            answer.append(cls.helper.build_handshake_record(connection, HandshakeType.SERVER_HELLO, fragment))
 
             fragment = cls.build_handshake_fragment_server_key_exchange(connection_manager, connection,
                                                                         record)
-            answer.append(cls.tls_helper.build_handshake_record(connection, HandshakeType.SERVER_KEY_EXCHANGE,
-                                                                fragment))
-            answer.append(cls.tls_helper.build_handshake_record(connection, HandshakeType.SERVER_HELLO_DONE, b''))
+            answer.append(cls.helper.build_handshake_record(connection, HandshakeType.SERVER_KEY_EXCHANGE,
+                                                        fragment))
+            answer.append(cls.helper.build_handshake_record(connection, HandshakeType.SERVER_HELLO_DONE, b''))
 
             return answer
 
@@ -198,9 +198,8 @@ class EcdhAnon:
             record)
 
         answer = [
-            cls.tls_helper.build_handshake_record(connection, HandshakeType.CLIENT_KEY_EXCHANGE,
-                                                  fragment_client_key_exchange),
-            cls.tls_helper.build_change_cipher(connection)
+            cls.helper.build_handshake_record(connection, HandshakeType.CLIENT_KEY_EXCHANGE, fragment_client_key_exchange),
+            cls.helper.build_change_cipher(connection)
         ]
 
         return answer
@@ -208,4 +207,4 @@ class EcdhAnon:
     @classmethod
     def received_client_key_exchange(cls, connection_manager: ConnectionManager, connection: Connection, record):
         connection.premaster_secret = cls.generate_server_shared_key(connection, record)
-        connection.security_params.master_secret = tls_helper.generate_master_secret(connection)
+        connection.security_params.master_secret = cls.helper.generate_master_secret(connection)

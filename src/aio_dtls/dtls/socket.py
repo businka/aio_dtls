@@ -2,6 +2,10 @@ import asyncio
 import logging
 
 from ..connection_manager.connection_manager import ConnectionManager
+from ..connection_manager.connection import Connection
+from ..const import tls as const_tls
+from ..constructs import dtls as dtls
+from .helper import Helper
 from ..dtls.handshake import Handshake
 from ..dtls.protocol import DTLSProtocol
 
@@ -33,11 +37,15 @@ class DtlsSocket:
 
     def sendto(self, data: bytes, address: tuple):
         connection = self.connection_manager.get_connection(address)
-        if not connection:
-            self.do_handshake(connection)
-        pass
 
-    def do_handshake(self, connection):
+        if connection:
+            records = Helper.build_application_record(connection, [data])
+            Helper.send_records(connection, records, self._sock.sendto)
+        else:
+            connection.flight_buffer.append(data)
+            self.do_handshake(connection)
+
+    def do_handshake(self, connection: Connection):
         self.connection_manager.new_client_connection(connection)
         client_hello = Handshake.build_client_hello(self.connection_manager, connection)
         self._sock.sendto(client_hello, connection.address)

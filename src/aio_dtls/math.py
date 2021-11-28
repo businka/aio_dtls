@@ -3,7 +3,7 @@ import logging
 
 from cryptography.hazmat.primitives import hashes
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def p_hash(hash_function, secret, seed, length):

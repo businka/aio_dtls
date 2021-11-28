@@ -2,7 +2,7 @@ import logging
 from asyncio import Protocol
 from typing import Optional, List
 
-from . import helper as tls_helper
+from .helper import Helper
 from .handshake import Handshake
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
@@ -47,8 +47,7 @@ class TLSProtocol(Protocol):
 
         # todo как минимум надо проверять размер ответа
         if answers:
-            plaintext = self.build_plaintext(self.connection, answers)
-            self.transport.write(plaintext)
+            Helper.send_records(self.connection, answers, self.transport.write)
         return answers
 
     def received_handshake(self, record: tls.RawPlaintext):
@@ -68,7 +67,7 @@ class TLSProtocol(Protocol):
             pass
 
     def received_application_data(self, record: tls.RawPlaintext):
-        data = tls_helper.decrypt_ciphertext_fragment(self.connection, record, tls_helper)
+        data = Helper.decrypt_ciphertext_fragment(self.connection, record)
         if self.app_protocol:
             self.app_protocol.data_received(data.content)
 
@@ -83,14 +82,4 @@ class TLSProtocol(Protocol):
         raise Exception(f'TLS {alert.level} {alert.description}')
         pass
 
-    @classmethod
-    def build_plaintext(cls, connection: Connection, records_data: List[tls.AnswerRecord]):
-        records = []
-        for record in records_data:
-            records.append({
-                "type": record.content_type,
-                "version": connection.ssl_version.value,
-                "fragment": record.fragment
-            })
-        plaintext = tls.RawDatagram.build(records)
-        return plaintext
+
