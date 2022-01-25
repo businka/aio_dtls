@@ -28,11 +28,14 @@ class ConnectionManager:
         self.signature_scheme = SignatureScheme(signature_scheme)
         self.private_key = None
 
-    def get_connection(self, address):
+    def get_connection(self, address, **kwargs):
         try:
-            return self.connections[Connection.get_id(address)]
+            connection = self.connections[Connection.get_id(address)]
+            if kwargs:
+                connection.user_props = kwargs
+            return connection
         except KeyError:
-            return Connection(address)
+            return Connection(address, **kwargs)
 
     def new_client_connection(self, connection: Connection):
         connection.ssl_version = self.ssl_versions.default
@@ -71,5 +74,8 @@ class ConnectionManager:
 
         return ec.generate_private_key(elliptic_curve)
 
-    def terminate_connection(self, connection):
-        pass
+    def close_connection(self, connection):
+        try:
+            del self.connections[connection.id]
+        except KeyError:
+            pass

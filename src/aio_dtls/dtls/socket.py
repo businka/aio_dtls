@@ -1,11 +1,10 @@
 import asyncio
 import logging
 
-from ..connection_manager.connection_manager import ConnectionManager
-from ..connection_manager.connection import Connection
-from ..const import tls as const_tls
-from ..constructs import dtls as dtls
 from .helper import Helper
+from ..connection_manager.connection import Connection
+from ..connection_manager.connection_manager import ConnectionManager
+from ..const import tls as const_tls
 from ..dtls.handshake import Handshake
 from ..dtls.protocol import DTLSProtocol
 
@@ -35,8 +34,17 @@ class DtlsSocket:
 
         pass
 
-    def sendto(self, data: bytes, address: tuple):
-        connection = self.connection_manager.get_connection(address)
+    def sendto(self, data: bytes, address: tuple, **kwargs):
+        connection = self.connection_manager.get_connection(address, **kwargs)
+        # if connection:
+            # if kwargs:
+            #     new_connection = kwargs.get('new_connection')
+            #     if new_connection:
+            #         record = Helper.build_alert(
+            #             connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
+            #         Helper.send_records(connection, [record, record], self._sock.sendto)
+            #         self.connection_manager.close_connection(connection)
+            #         connection = self.connection_manager.get_connection(address, **kwargs)
 
         if connection:
             records = Helper.build_application_record(connection, [data])
@@ -80,3 +88,13 @@ class DtlsSocket:
                 raise Exception(f'source port {source_port} not installed')
         else:
             self._address = (self._address[0], _address[1])
+
+    def close(self, address=None):
+        if address is not None:
+            connection = self.connection_manager.get_connection(address)
+            if connection:
+                record = Helper.build_alert(
+                    connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
+                Helper.send_records(connection, [record], self._sock.sendto)
+        else:
+            self._sock.close()

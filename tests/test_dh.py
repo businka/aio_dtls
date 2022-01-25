@@ -35,6 +35,17 @@ class Test1(unittest.TestCase):
                 sslSocket.shutdown(socket.SHUT_RDWR)
                 sslSocket.close()
 
+    def test_pbkdf2(self):
+        import hashlib
+        hashlib.pbkdf2_hmac(
+            'sha256',  # Используемый алгоритм хеширования
+            password.encode('utf-8'),  # Конвертирование пароля в байты
+            salt,  # Предоставление соли
+            100000,  # Рекомендуется использоваться по крайней мере 100000 итераций SHA-256
+            dklen=128
+        )
+
+
     def test_create_dh_param(self):
         # Generate some parameters. These can be reused.
         parameters = dh.generate_parameters(generator=2, key_size=2048)

@@ -39,11 +39,12 @@ class TlsSocket:
         self._address = address
         pass
 
-    async def send(self, data: bytes):
+    async def send(self, data: bytes, **kwargs):
         if not self._address or not self._writer:
             raise Exception('dest not found')
-        connection = self.connection_manager.get_connection(self._address)
+        connection = self.connection_manager.get_connection(self._address, **kwargs)
         if not connection:
+            connection.flight_buffer.append(data)
             await self.do_handshake(connection)
             pass
         pass
@@ -88,3 +89,6 @@ class TlsSocket:
             ), host, port)
 
         self._sock = self._server.sockets[0]
+
+    def close(self):
+        self._sock.close()

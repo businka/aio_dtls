@@ -1,4 +1,5 @@
 from .handshake_ecdh_anon import EcdhAnon
+from .handshake_ecdhe_psk import EcdhePsk
 from .helper import Helper
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
@@ -11,7 +12,8 @@ class Handshake(TlsHandshake):
     tls = dtls
     helper = Helper
     handlers = {
-        'ECDH_ANON': EcdhAnon
+        'ECDH_ANON': EcdhAnon,
+        'ECDHE_PSK': EcdhePsk
     }
 
     @classmethod

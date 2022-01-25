@@ -3,8 +3,8 @@ from typing import List
 
 from .. import math
 from ..connection_manager.connection import Connection
-from ..const import tls as const_tls
-from ..constructs import dtls
+from ..const import tls as const_tls, handshake as const_handshake
+from ..constructs import dtls, tls
 from ..tls.helper import Helper as TlsHelper
 
 logger = logging.getLogger(__name__)
@@ -88,6 +88,22 @@ class Helper(TlsHelper):
         )
 
     @classmethod
+    def build_alert(cls, connection: Connection, level: const_tls.AlertLevel, description: const_tls.AlertDescription):
+        fragment = tls.Alert.build({
+            "level": level.value,
+            "description": description.value
+
+        })
+        if connection.state.value == const_handshake.ConnectionState.HANDSHAKE_OVER:
+            fragment = Helper.encrypt_ciphertext_fragment(
+                connection, const_tls.ContentType.ALERT, fragment)
+
+        return dtls.AnswerRecord(
+            content_type=const_tls.ContentType.ALERT.value,
+            epoch=connection.epoch,
+            fragment=fragment)
+
+    @classmethod
     def build_handshake_answer(cls, connection: Connection, fragment: bytes):
         return dtls.AnswerRecord(
             content_type=const_tls.ContentType.HANDSHAKE.value,
@@ -97,5 +113,6 @@ class Helper(TlsHelper):
 
     @classmethod
     def send_records(cls, connection: Connection, answers, writer):
+        logger.debug(f'dtls send answers ({len(answers)})')
         plaintext = cls.build_plaintext(connection, answers)
         writer(plaintext, connection.address)

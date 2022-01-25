@@ -1,60 +1,60 @@
-from construct import Prefixed, GreedyBytes, Default, Pointer
-from construct import Struct, Int8ub, Int16ub, Enum, Switch
+from construct import Prefixed, GreedyBytes, Default, Struct, Int8ub, Int16ub, Enum, Switch, this, Peek
 
 from ..const import tls
 
 ServerDHParams = Struct(
-    "dh_p" / Prefixed(Int16ub, GreedyBytes),
-    "dh_g" / Prefixed(Int16ub, GreedyBytes),
-    "dh_Ys" / Prefixed(Int16ub, GreedyBytes),
+    dh_p=Prefixed(Int16ub, GreedyBytes),
+    dh_g=Prefixed(Int16ub, GreedyBytes),
+    dh_Ys=Prefixed(Int16ub, GreedyBytes),
 )
 
 ServerKeyExchangeDHAnon = Struct(
-    "param" / ServerDHParams
+    param=ServerDHParams
 )
 
-ECParametersExplicitPrime = Struct()
-ECParametersExplicitChar2 = Struct()
-ECParametersNamedCurve = Struct(
-    "curve_type" / Enum(Int8ub, tls.ECCurveType),
-    "namedcurve" / Enum(Int16ub, tls.NamedCurve)
-)
+ExplicitPrime = Struct()
+ExplicitChar2 = Struct()
 
-ECParameters = Struct(
-    "curve_type" / Enum(Int8ub, tls.ECCurveType),
-    Switch(lambda ctx: int(ctx.curve_type), {
-        tls.ECCurveType.explicit_prime: ECParametersExplicitPrime,
-        tls.ECCurveType.explicit_char2: ECParametersExplicitChar2,
-        tls.ECCurveType.named_curve.value: ECParametersNamedCurve
-    })
+NamedCurve = Struct(
+    curve_type=Enum(Int8ub, tls.ECCurveType),
+    namedcurve=Enum(Int16ub, tls.NamedCurve)
 )
 
 ECPoint = Struct(
-    "point" / Prefixed(Int8ub, GreedyBytes)  # GreedyRange(Int8ub))
+    point=Prefixed(Int8ub, GreedyBytes)  # GreedyRange(Int8ub))
 )
 
 ServerECDHParams = Struct(
-
-    "curve_type" / Pointer(0, Enum(Int8ub, tls.ECCurveType)),
-    "curve_params" / Switch(lambda ctx: int(ctx.curve_type), {
-        tls.ECCurveType.explicit_prime.value: ECParametersExplicitPrime,
-        tls.ECCurveType.explicit_char2.value: ECParametersExplicitChar2,
-        tls.ECCurveType.named_curve.value: ECParametersNamedCurve
+    curve_type=Peek(Enum(Int8ub, tls.ECCurveType)),
+    curve_params=Switch(lambda ctx: int(ctx.curve_type), {
+        tls.ECCurveType.named_curve.value: NamedCurve,
+        tls.ECCurveType.explicit_prime.value: ExplicitPrime,
+        tls.ECCurveType.explicit_char2.value: ExplicitChar2
     }),
-    "public" / ECPoint
+    public=ECPoint
 )
 
 ServerKeyExchangeECDH = Struct(
-    "param" / ServerECDHParams,
-    "signed_params" / Default(GreedyBytes, b'')
+    param=ServerECDHParams,
+    signed_params=Default(GreedyBytes, b'')
 )
 
+ServerKeyExchangeECDHPSK = Struct(
+    psk_identity_hint=Prefixed(Int16ub, GreedyBytes),
+    param=ServerECDHParams
+)
+
+ServerKeyExchange = Switch(this._params.key_exchange_algorithm, {
+    'ec_diffie_hellman': ServerKeyExchangeECDH,
+    'ec_diffie_hellman_psk': ServerKeyExchangeECDHPSK
+}, default=GreedyBytes)
+
 ClientDiffieHellmanPublic = Struct(
-    "dh_public" / Struct(
-        "dh_Yc" / Prefixed(Int8ub, GreedyBytes)
+    dh_public=Struct(
+        dh_Yc=Prefixed(Int8ub, GreedyBytes)
     )
 )
 
 ClientKeyExchange = Struct(
-    "exchange_keys" / ClientDiffieHellmanPublic,
+    exchange_keys=ClientDiffieHellmanPublic,
 )

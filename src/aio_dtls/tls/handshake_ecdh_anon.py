@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class EcdhAnon:
+    key_exchange_algorithm = 'ec_diffie_hellman'
     tls_construct = tls
     helper = Helper
 
@@ -100,7 +101,9 @@ class EcdhAnon:
 
     @classmethod
     def generate_client_shared_key(cls, connection_manager: ConnectionManager, connection: Connection, record):
-        data = tls_ecc.ServerKeyExchangeECDH.parse(record.fragment.fragment)
+        data = tls_ecc.ServerKeyExchange.parse(
+            record.fragment.fragment, key_exchange_algorithm=cls.key_exchange_algorithm)
+
         if data.param.curve_type != ECCurveType.named_curve and not data.param.curve_params.namedcurve:
             raise NotImplemented()
             pass

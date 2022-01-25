@@ -23,3 +23,11 @@ class UnsupportedExtensionException(TLSException):
 
 class TLSValidationException(TLSException):
     pass
+
+
+class BadMAC(TLSException):
+    pass
+
+
+class TLSCloseNotify(TLSException):
+    pass

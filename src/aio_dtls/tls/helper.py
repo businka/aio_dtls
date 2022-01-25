@@ -12,8 +12,6 @@ from ..constructs import tls
 logger = logging.getLogger(__name__)
 
 
-class BadMAC(Exception):
-    pass
 
 
 class Helper:
@@ -155,6 +153,32 @@ class Helper:
         return master_secret
 
     @classmethod
+    def generate_owner_psk(cls, connection: Connection, oxm, obt_uuid, server_uuid):
+        seed = connection.security_params.client_random + connection.security_params.server_random
+        label = "key expansion".encode()
+        logger.debug(f'master secret {connection.security_params.master_secret.hex(" ")}')
+        logger.debug(f'digestmod {connection.digestmod} label {label}')
+        logger.debug(f'seed {seed.hex(" ")}')
+
+        key_block = math.p_hash2(connection.digestmod, connection.security_params.master_secret,
+                                 [
+                                     label,
+                                     connection.security_params.client_random,
+                                     connection.security_params.server_random
+                                 ], 48)
+
+        label = oxm
+        seed = obt_uuid + server_uuid
+        logger.debug(f'master secret {connection.security_params.master_secret.hex(" ")}')
+        logger.debug(f'digestmod {connection.digestmod} label {label}')
+        logger.debug(f'seed {seed.hex(" ")}')
+
+        psk = math.prf(connection.digestmod, key_block, label, seed, 48)
+
+        logger.debug(f'PSK {psk.hex(" ")}')
+        return psk
+
+    @classmethod
     def get_seed_by_handshake_messages(cls, connection: Connection):
         digest = hashes.Hash(connection.hash_func())
         digest.update(connection.handshake_params.full_handshake_messages)
@@ -245,7 +269,7 @@ class Helper:
         return data
 
     @classmethod
-    def build_alert(cls, level: const_tls.AlertLevel, description: const_tls.AlertDescription):
+    def build_alert(cls, connection: Connection, level: const_tls.AlertLevel, description: const_tls.AlertDescription):
         return tls.AnswerRecord(
             content_type=const_tls.ContentType.ALERT.value,
             fragment=tls.Alert.build({

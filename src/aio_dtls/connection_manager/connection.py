@@ -105,7 +105,8 @@ class ConnectionState:
 
 
 class Connection:
-    def __init__(self, address: Tuple[str, int]):
+    def __init__(self, address: Tuple[str, int], **kwargs):
+        self.user_props = kwargs
         self.security_params: SecurityParameters = SecurityParameters()
         self.state: ConnectionState = ConnectionState()
         self.handshake_params: HandshakeParams = HandshakeParams()

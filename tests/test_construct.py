@@ -6,6 +6,7 @@ import unittest
 
 from aio_dtls.constructs import tls, tls_ecc
 from aio_dtls.constructs.dtls import Plaintext, ClientHello, RawPlaintext, Datagram, RawDatagram
+from aio_dtls.const import tls as const_tls
 
 
 class TestDTLSPlaintextParsing(unittest.TestCase):
@@ -153,3 +154,14 @@ class TestDTLSPlaintextParsing(unittest.TestCase):
             mac_length=mac_length,
             tls_compressed_length=tls_compressed_length,
         )
+
+    def test_parse_server_key_exchange_ecc(self):
+        ecdhe = b'\x03\x00\x17A\x04\x11\x14\x9eA\xcb:\xd8Z\xf6\xe8~r\xd5\xc5\xe8\x106\x1e\xa4:\xa6;\n\xa0\x8f\xf6\xcf\xbd\x9bi\xd2\xbd\xf6H/>\x84\x9c\x18\xa6S(e\x82\xe2\xe6\xf9\x13,\xd6\xe7\xe2\xeaEFz\xf9\xd3\x1d\xaa\xb3\xc0\x96\x8f'
+        print(f'ecdhe {ecdhe.hex()}')
+        res1 = tls_ecc.ServerKeyExchange.parse(ecdhe, key_exchange_algorithm='ec_diffie_hellman')
+        self.assertTrue(const_tls.NamedCurve.secp256r1.value, int(res1.param.curve_params.namedcurve))
+        psk = b'\x00\x10\xed\xd6-\x96\x1d\xd4D(k\xde\xd5h}\xb7S\x9d\x03\x00\x17A\x04\xe3\x19i\xb5O-\xd5\xcb\xfcE\x00F\x98\n"ma\x81\xbdzv\xaf9\x85\xfa\xb5*$\xc5\xac\x8c~\xfc\xe6\xf7ByA-\xae\xb0I\xdd\x94}!\x9a`\xd8CR\xf9\x8bY\x8cKX7\x0e\xe0E\x9d\x07\xee'
+        print(f'psk {psk.hex()}')
+        res2 = tls_ecc.ServerKeyExchange.parse(psk, key_exchange_algorithm='ec_diffie_hellman_psk')
+        self.assertTrue(const_tls.NamedCurve.secp256r1.value, int(res2.param.curve_params.namedcurve))
+        pass
