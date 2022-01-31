@@ -52,9 +52,7 @@ class EcdhAnon:
         return handshake_fragment_server_hello
 
     @classmethod
-    def build_handshake_fragment_server_key_exchange(cls, connection_manager: ConnectionManager,
-                                                     connection: Connection,
-                                                     record):
+    def generate_server_private_key(cls, connection_manager: ConnectionManager, connection: Connection):
         connection_ec = getattr(ec, connection.ec.name.upper())()
 
         connection.server_private_key = connection_manager.get_ec_private_key(connection_ec)
@@ -66,7 +64,24 @@ class EcdhAnon:
             format=serialization.PublicFormat.UncompressedPoint
         )
         logger.debug(f'server public key {server_public_key_raw.hex(" ")}')
+        return server_public_key_raw
 
+    @classmethod
+    def get_raw_client_public_key(cls, connection: Connection):
+        client_public_key = connection.client_private_key.public_key()
+
+        client_public_key_raw = client_public_key.public_bytes(
+            encoding=serialization.Encoding.X962,
+            format=serialization.PublicFormat.UncompressedPoint
+        )
+        logger.debug(f'client public key {client_public_key_raw.hex(" ")}')
+        return client_public_key_raw
+
+    @classmethod
+    def build_handshake_fragment_server_key_exchange(cls, connection_manager: ConnectionManager,
+                                                     connection: Connection,
+                                                     record):
+        server_public_key_raw = cls.generate_server_private_key(connection_manager, connection)
         handshake_fragment_server_key_exchange = tls_ecc.ServerKeyExchangeECDH.build({
             "param": {
                 "curve_type": ECCurveType.named_curve.value,
@@ -83,27 +98,18 @@ class EcdhAnon:
     def build_handshake_fragment_client_key_exchange(cls, connection_manager: ConnectionManager,
                                                      connection: Connection,
                                                      record):
-        client_public_key = connection.client_private_key.public_key()
-
-        client_public_key_raw = client_public_key.public_bytes(
-            encoding=serialization.Encoding.X962,
-            format=serialization.PublicFormat.UncompressedPoint
-        )
-        logger.debug(f'client public key {client_public_key_raw.hex(" ")}')
-
+        client_public_key_raw = cls.get_raw_client_public_key(connection)
         return tls_ecc.ClientKeyExchange.build({
             "exchange_keys": {
                 "dh_public": {
                     "dh_Yc": client_public_key_raw
                 }
             }
-        })
+        }, key_exchange_algorithm=cls.key_exchange_algorithm)
 
     @classmethod
     def generate_client_shared_key(cls, connection_manager: ConnectionManager, connection: Connection, record):
-        data = tls_ecc.ServerKeyExchange.parse(
-            record.fragment.fragment, key_exchange_algorithm=cls.key_exchange_algorithm)
-
+        data = record.fragment.fragment
         if data.param.curve_type != ECCurveType.named_curve and not data.param.curve_params.namedcurve:
             raise NotImplemented()
             pass
@@ -123,7 +129,8 @@ class EcdhAnon:
 
     @classmethod
     def generate_server_shared_key(cls, connection: Connection, record):
-        data = tls_ecc.ClientKeyExchange.parse(record.fragment.fragment)
+        data = tls_ecc.ClientKeyExchange.parse(record.fragment.fragment,
+                                               key_exchange_algorithm=cls.key_exchange_algorithm)
         client_public_key_raw = data.exchange_keys.dh_public.dh_Yc
         connection_ec = getattr(ec, connection.ec.name.upper())()
         connection.client_public_key = EllipticCurvePublicKey.from_encoded_point(connection_ec, client_public_key_raw)
@@ -170,7 +177,7 @@ class EcdhAnon:
             fragment = cls.build_handshake_fragment_server_key_exchange(connection_manager, connection,
                                                                         record)
             answer.append(cls.helper.build_handshake_record(connection, HandshakeType.SERVER_KEY_EXCHANGE,
-                                                        fragment))
+                                                            fragment))
             answer.append(cls.helper.build_handshake_record(connection, HandshakeType.SERVER_HELLO_DONE, b''))
 
             return answer
@@ -192,6 +199,9 @@ class EcdhAnon:
         raw_handshake_message = record.fragment
         record.fragment = cls.tls_construct.Handshake.parse(raw_handshake_message)
 
+        record.fragment.fragment = tls_ecc.ServerKeyExchange.parse(
+            record.fragment.fragment, key_exchange_algorithm=cls.key_exchange_algorithm)
+
         connection.premaster_secret = cls.generate_client_shared_key(connection_manager, connection, record)
 
     @classmethod
@@ -201,7 +211,8 @@ class EcdhAnon:
             record)
 
         answer = [
-            cls.helper.build_handshake_record(connection, HandshakeType.CLIENT_KEY_EXCHANGE, fragment_client_key_exchange),
+            cls.helper.build_handshake_record(connection, HandshakeType.CLIENT_KEY_EXCHANGE,
+                                              fragment_client_key_exchange),
             cls.helper.build_change_cipher(connection)
         ]
 

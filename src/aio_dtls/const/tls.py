@@ -56,7 +56,6 @@ class ContentType(Enum):
 class AlertLevel(Enum):
     WARNING = 1
     FATAL = 2
-    ALERT_MESSAGE = 170  # ??? from wireshark
 
 
 class AlertDescription(Enum):
@@ -89,8 +88,8 @@ class AlertDescription(Enum):
     UNRECOGNIZED_NAME = 112
     BAD_CERTIFICATE_STATUS_RESPONSE = 113
     BAD_CERTIFICATE_HASH_VALUE = 114
-    UNKNOWN_PSK_IDENTITY = 115,
-    CERTIFICATE_REQUIRED = 116,
+    UNKNOWN_PSK_IDENTITY = 115
+    CERTIFICATE_REQUIRED = 116
     NO_APPLICATION_PROTOCOL = 120
 
 

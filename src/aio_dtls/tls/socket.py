@@ -18,7 +18,9 @@ class TlsSocket:
                  certfile=None,
                  do_handshake_on_connect=False,
                  ciphers: Optional[list] = None,
-                 elliptic_curves=None
+                 elliptic_curves: Optional[list] = None,
+                 identity_hint: Optional[str] = None,
+                 psk: Optional[str] = None
                  ):
         self.endpoint = endpoint
         self._server = None
@@ -27,8 +29,10 @@ class TlsSocket:
         self._sock = None
         self._address = None
         self.connection_manager = ConnectionManager(
-            ciphers=ciphers,
+            identity_hint=identity_hint,
             elliptic_curves=elliptic_curves,
+            psk=psk,
+            ciphers=ciphers,
             is_dtls=False
         ) if connection_manager is None else connection_manager
 

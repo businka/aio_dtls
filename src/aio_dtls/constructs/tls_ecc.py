@@ -40,7 +40,7 @@ ServerKeyExchangeECDH = Struct(
 )
 
 ServerKeyExchangeECDHPSK = Struct(
-    psk_identity_hint=Prefixed(Int16ub, GreedyBytes),
+    psk_identity_hint=Prefixed(Int16ub, GreedyBytes),  # rfc4279
     param=ServerECDHParams
 )
 
@@ -55,6 +55,18 @@ ClientDiffieHellmanPublic = Struct(
     )
 )
 
-ClientKeyExchange = Struct(
+ClientKeyExchangeECDH = Struct(
     exchange_keys=ClientDiffieHellmanPublic,
 )
+
+ClientKeyExchangeECDHPSK = Struct(
+    psk_identity=Struct(
+        dh_public_Yc=Prefixed(Int16ub, GreedyBytes),
+        psk=Prefixed(Int16ub, GreedyBytes)
+    )
+)
+
+ClientKeyExchange = Switch(this._params.key_exchange_algorithm, {
+    'ec_diffie_hellman': ClientKeyExchangeECDH,
+    'ec_diffie_hellman_psk': ClientKeyExchangeECDHPSK
+}, default=GreedyBytes)

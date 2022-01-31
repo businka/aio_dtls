@@ -113,6 +113,6 @@ class Helper(TlsHelper):
 
     @classmethod
     def send_records(cls, connection: Connection, answers, writer):
-        logger.debug(f'dtls send answers ({len(answers)})')
+        logger.debug(f'dtls send ({len(answers)})')
         plaintext = cls.build_plaintext(connection, answers)
         writer(plaintext, connection.address)

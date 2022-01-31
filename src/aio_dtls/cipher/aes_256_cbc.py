@@ -1,8 +1,5 @@
-from .aes_xxx_cbc import AesXxxCbc
+from .aes_128_cbc import Aes128Cbc
 
 
-class Aes256Cbc(AesXxxCbc):
-    cipher_type = 'block'
+class Aes256Cbc(Aes128Cbc):
     key_material = 32
-    iv_size = 16
-    block_size = 16

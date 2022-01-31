@@ -101,9 +101,19 @@ class Protocol2:
             data = self.protocol_helper.decrypt_ciphertext_fragment(self.connection, record)
             alert = tls.Alert.parse(data.block_ciphered.content)
             if int(alert.description) == const_tls.AlertDescription.CLOSE_NOTIFY.value:
-                record = self.protocol_helper.build_alert(
-                    self.connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
-                self.protocol_helper.send_records(self.connection, [record], self.writer)
+                if self.connection.new_connection:  # мы инициаторы разрыва
+                    self.connection.new_connection['send_alert'] -= 1
+                    if not self.connection.new_connection['send_alert']:
+                        self.connection_manager.close_connection(self.connection)
+                        self.endpoint.send(
+                            self.connection.new_connection['data'],
+                            self.connection.new_connection['address'],
+                            **self.connection.new_connection['params']
+                        )
+                else:
+                    record = self.protocol_helper.build_alert(
+                        self.connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
+                    self.protocol_helper.send_records(self.connection, [record], self.writer)
             else:
                 raise NotImplemented()
         else:

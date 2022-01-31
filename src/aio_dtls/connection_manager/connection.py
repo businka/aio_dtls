@@ -156,6 +156,7 @@ class Connection:
         self.epoch = 0
 
         self.flight_buffer = []
+        self.new_connection = None
 
     @property
     def id(self):

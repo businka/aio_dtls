@@ -12,8 +12,6 @@ from ..constructs import tls
 logger = logging.getLogger(__name__)
 
 
-
-
 class Helper:
     @classmethod
     def build_plaintext(cls, connection: Connection, records_data: List[tls.AnswerRecord]):
@@ -149,31 +147,39 @@ class Helper:
 
         master_secret = math.prf(connection.digestmod, connection.premaster_secret, label, seed, 48)
         logger.debug(f'master secret {master_secret.hex(" ")}')
+
+        logger.error(f'master secret {bytes(master_secret)}')
+        logger.error(f'client random {connection.security_params.client_random}')
+        logger.error(f'server random {connection.security_params.server_random}')
         connection.premaster_secret = b''
         return master_secret
 
     @classmethod
-    def generate_owner_psk(cls, connection: Connection, oxm, obt_uuid, server_uuid):
-        seed = connection.security_params.client_random + connection.security_params.server_random
+    def generate_owner_psk(cls, connection: Connection, oxm, owner_subject_uuid, device_uuid):
+        seed = connection.security_params.server_random + connection.security_params.client_random
         label = "key expansion".encode()
         logger.debug(f'master secret {connection.security_params.master_secret.hex(" ")}')
         logger.debug(f'digestmod {connection.digestmod} label {label}')
         logger.debug(f'seed {seed.hex(" ")}')
 
-        key_block = math.p_hash2(connection.digestmod, connection.security_params.master_secret,
-                                 [
-                                     label,
-                                     connection.security_params.client_random,
-                                     connection.security_params.server_random
-                                 ], 48)
+        key_block_len = 2 * (
+                connection.cipher.mac.mac_length +
+                connection.cipher.cipher.key_material +
+                connection.cipher.cipher.iv_size_ocf
+        )
 
-        label = oxm
-        seed = obt_uuid + server_uuid
+        key_block = math.p_hash(
+            connection.digestmod,
+            connection.security_params.master_secret,
+            label + connection.security_params.server_random + connection.security_params.client_random,
+            key_block_len)  # todo не стандартно размер зависит от chipher
+
+        seed = oxm + owner_subject_uuid + device_uuid
         logger.debug(f'master secret {connection.security_params.master_secret.hex(" ")}')
         logger.debug(f'digestmod {connection.digestmod} label {label}')
         logger.debug(f'seed {seed.hex(" ")}')
 
-        psk = math.prf(connection.digestmod, key_block, label, seed, 48)
+        psk = math.p_hash(connection.digestmod, key_block, seed, 16)
 
         logger.debug(f'PSK {psk.hex(" ")}')
         return psk

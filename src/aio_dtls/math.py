@@ -27,26 +27,6 @@ def p_hash(hash_function, secret, seed, length):
         index += how_many
     return ret
 
-def p_hash2(hash_function, secret, messages, length):
-    """Internal method for calculation the PRF in TLS."""
-
-    ret = bytearray(length)
-    index = 0
-    mac = hmac.new(secret, digestmod=hash_function)
-    hmac_a = mac.copy()
-    for elem in messages:
-        hmac_a.update(elem)
-        a = 1
-    a = hmac_a.digest()
-    gen_output = 0
-    while gen_output < length:
-
-        how_many = min(length - index, len(output))
-        ret[index:index + how_many] = output[:how_many]
-        index += how_many
-    return ret
-
-
 
 def prf(hash_function: str, secret: bytes, label: bytes, seed: bytes, length: int):
     return p_hash(hash_function, secret, label + seed, length)

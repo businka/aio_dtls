@@ -35,8 +35,8 @@ class Handshake:
         connection.security_params.client_random = connection_manager.generate_tls_random()
         ciphers = connection_manager.ciphers.available_values
         if connection.user_props:
-            if 'cipher' in connection.user_props:
-                ciphers = CipherSuitesHandler(connection.user_props['cipher']).available_values
+            if 'ciphers' in connection.user_props:
+                ciphers = CipherSuitesHandler(connection.user_props['ciphers']).available_values
 
         return {
             "cipher_suites": ciphers,
@@ -148,6 +148,7 @@ class Handshake:
     @classmethod
     def received_server_key_exchange(cls, connection_manager: ConnectionManager, connection: Connection, record):
         connection.update_handshake_hash(record.fragment, name='server key exchange')
+        print(connection.cipher)
         handler = cls.get_handshake_handler(connection.cipher)
         handler.received_server_key_exchange(connection_manager, connection, record)
 

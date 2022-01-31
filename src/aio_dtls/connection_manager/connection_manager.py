@@ -10,11 +10,16 @@ from .connection import Connection
 from ..const import handshake as const_handshake
 from ..const import tls as const_tls
 from ..constructs.tls import Random
+from typing import Optional
 
 
 class ConnectionManager:
-    def __init__(self, *, secret=None, connections=None, ssl_versions=None, elliptic_curves=None, ec_point_formats=None,
-                 ciphers=None, compression_methods=None, signature_scheme=None, unittest_mode=False, is_dtls=True,
+    def __init__(self, *, secret=None, connections=None, ssl_versions=None, ec_point_formats=None,
+                 compression_methods=None, signature_scheme=None, unittest_mode=False, is_dtls=True,
+                 ciphers: Optional[list] = None,
+                 elliptic_curves: Optional[list] = None,
+                 identity_hint: Optional[str] = None,
+                 psk: Optional[str] = None,
                  **kwargs):
 
         self.unittest_mode = unittest_mode
@@ -27,6 +32,8 @@ class ConnectionManager:
         self.compression_methods = CompressionMethods(compression_methods)
         self.signature_scheme = SignatureScheme(signature_scheme)
         self.private_key = None
+        self.identity_hint = identity_hint
+        self.psk = psk
 
     def get_connection(self, address, **kwargs):
         try:

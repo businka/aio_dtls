@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Optional
 
 from .helper import Helper
 from ..connection_manager.connection import Connection
@@ -17,17 +18,27 @@ class DtlsSocket:
                  endpoint=None,
                  # protocol=None,
                  connection_manager=None,
-                 certfile=None,
+                 connection_props=None,
                  do_handshake_on_connect=False,
-                 ciphers="NULL"
+                 ciphers: Optional[list] = None,
+                 elliptic_curves: Optional[list] = None,
+                 identity_hint: Optional[dict] = None,
+                 psk: Optional[str] = None
                  ):
         # self.server = server
         self.endpoint = endpoint
+        self.connection_props = connection_props
         self._sock = sock
         self._transport = None
         self._protocol = None
         self._address = None
-        self.connection_manager = ConnectionManager() if connection_manager is None else connection_manager
+
+        self.connection_manager = ConnectionManager(
+            identity_hint=identity_hint,
+            elliptic_curves=elliptic_curves,
+            psk=psk,
+            ciphers=ciphers,
+        ) if connection_manager is None else connection_manager
         # self.dtls_protocol = DTLSProtocol(
         #     connection_manager=connection_manager,
         # )
@@ -36,22 +47,35 @@ class DtlsSocket:
 
     def sendto(self, data: bytes, address: tuple, **kwargs):
         connection = self.connection_manager.get_connection(address, **kwargs)
-        # if connection:
-            # if kwargs:
-            #     new_connection = kwargs.get('new_connection')
-            #     if new_connection:
-            #         record = Helper.build_alert(
-            #             connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
-            #         Helper.send_records(connection, [record, record], self._sock.sendto)
-            #         self.connection_manager.close_connection(connection)
-            #         connection = self.connection_manager.get_connection(address, **kwargs)
-
+        if connection:
+            if kwargs:
+                new_connection = kwargs.get('new_connection')
+                if new_connection:
+                    record = Helper.build_alert(
+                        connection, const_tls.AlertLevel.WARNING, const_tls.AlertDescription.CLOSE_NOTIFY)
+                    connection.new_connection = {
+                        'send_alert': 2,
+                        'address': address,
+                        'params': new_connection,
+                        'data': data
+                    }
+                    Helper.send_records(connection, [record, record], self._sock.sendto)
+                    return
         if connection:
             records = Helper.build_application_record(connection, [data])
             Helper.send_records(connection, records, self._sock.sendto)
         else:
             connection.flight_buffer.append(data)
             self.do_handshake(connection)
+
+    # def send_alert(self, level: const_tls.AlertLevel, description: const_tls.AlertDescription, address: tuple,
+    #                **kwargs):
+    #     connection = self.connection_manager.get_connection(address, **kwargs)
+    #     if connection:
+    #         records = [Helper.build_alert(connection, level, description)]
+    #         Helper.send_records(connection, records, self._sock.sendto)
+    #     else:
+    #         raise NotImplemented()
 
     def do_handshake(self, connection: Connection):
         self.connection_manager.new_client_connection(connection)
