@@ -5,9 +5,8 @@ from .connection_manager.connection import Connection
 from .connection_manager.connection_manager import ConnectionManager
 from .const import handshake as const_handshake
 from .const import tls as const_tls
-from .exceptions import TLSCloseNotify, BadMAC, TLSException
 from .constructs import tls
-from .tls import helper as tls_helper
+from .exceptions import BadMAC, TLSException
 
 logger = logging.getLogger(__name__)
 

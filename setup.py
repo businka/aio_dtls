@@ -1,14 +1,13 @@
-#!/usr/bin/env python
 import setuptools
 
-from src.aio_dtls import __version__
+# from src.aio_dtls import __version__
 
-with open("readme.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='aoi_dtls',
-    version=__version__,
+    name='aio_dtls',
+    version='0.0.2',  # __version__,
     test_requires=[],
     url='https://github.com/businka/aio_dtls',
     license='MIT',
@@ -33,5 +32,5 @@ setuptools.setup(
         "cryptography",
     ],
     package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
+    packages=setuptools.find_packages(where="src")
 )

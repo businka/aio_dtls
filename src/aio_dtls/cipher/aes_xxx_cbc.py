@@ -1,8 +1,6 @@
 import os
 
-from cryptography.hazmat.primitives.ciphers import (
-    Cipher, algorithms, modes
-)
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from .cipher import Cipher as _Cipher
 

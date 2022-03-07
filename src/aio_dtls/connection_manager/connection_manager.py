@@ -3,6 +3,7 @@ import hmac
 import secrets
 import time
 from datetime import datetime
+from typing import Optional
 from uuid import uuid4
 
 from . import ECPointFormats, SSlVersions, EllipticCurves, CompressionMethods, CipherSuites, SignatureScheme
@@ -10,7 +11,6 @@ from .connection import Connection
 from ..const import handshake as const_handshake
 from ..const import tls as const_tls
 from ..constructs.tls import Random
-from typing import Optional
 
 
 class ConnectionManager:

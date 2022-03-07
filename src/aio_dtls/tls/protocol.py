@@ -1,9 +1,9 @@
 import logging
 from asyncio import Protocol
-from typing import Optional, List
+from typing import Optional
 
-from .helper import Helper
 from .handshake import Handshake
+from .helper import Helper
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const import handshake as const_handshake
 from ..constructs import tls
@@ -46,4 +46,3 @@ class TLSProtocol(Protocol, Protocol2):
             self.connection.state.value = const_handshake.ConnectionState.HANDSHAKE_OVER
             return
         raise NotImplemented()
-

@@ -3,4 +3,4 @@ from .const.cipher_suites import CipherSuites
 from .dtls.socket import DtlsSocket
 from .tls.socket import TlsSocket
 
-__version__ = '0.0.1'
+# __version__ = '0.0.1'

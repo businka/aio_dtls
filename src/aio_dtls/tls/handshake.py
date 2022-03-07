@@ -3,13 +3,13 @@ import logging
 from .handshake_ecdh_anon import EcdhAnon
 from .handshake_ecdhe_ecdsa import EcdheEcdsa
 from .helper import Helper
-from ..exceptions import BadMAC
 from ..connection_manager import CipherSuites as CipherSuitesHandler
 from ..connection_manager.connection import Connection
 from ..connection_manager.connection_manager import ConnectionManager
 from ..const import tls as const_tls
 from ..const.cipher_suites import CipherSuite, CipherSuites
 from ..constructs import tls
+from ..exceptions import BadMAC
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,8 @@ class Handshake:
             logger.debug(f'verify data {verify_data.hex(" ")}')
             logger.debug(f'incoming verify data {incoming_verify_data.hex(" ")}')
             answer = [
-                cls.helper.build_alert(connection, const_tls.AlertLevel.ALERT_MESSAGE, const_tls.AlertDescription.ENCRYPTED_ALERT)]
+                cls.helper.build_alert(connection, const_tls.AlertLevel.ALERT_MESSAGE,
+                                       const_tls.AlertDescription.ENCRYPTED_ALERT)]
             connection_manager.close_connection(connection)
             return answer
 
@@ -249,7 +250,8 @@ class Handshake:
                                    const_tls.ContentType.HANDSHAKE.value, block_cipher.block_ciphered.content)
 
         if block_cipher.block_ciphered.MAC != mac:
-            answer = [cls.helper.build_alert(connection, const_tls.AlertLevel.FATAL, const_tls.AlertDescription.BAD_RECORD_MAC)]
+            answer = [cls.helper.build_alert(connection, const_tls.AlertLevel.FATAL,
+                                             const_tls.AlertDescription.BAD_RECORD_MAC)]
             connection_manager.close_connection(connection)
             return answer
 
