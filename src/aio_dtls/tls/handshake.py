@@ -148,7 +148,7 @@ class Handshake:
     @classmethod
     def received_server_key_exchange(cls, connection_manager: ConnectionManager, connection: Connection, record):
         connection.update_handshake_hash(record.fragment, name='server key exchange')
-        print(connection.cipher)
+        logger.info(f'connection cipher {connection.cipher}')
         handler = cls.get_handshake_handler(connection.cipher)
         handler.received_server_key_exchange(connection_manager, connection, record)
 

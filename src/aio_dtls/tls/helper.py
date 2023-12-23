@@ -146,11 +146,11 @@ class Helper:
         logger.debug(f'seed {seed.hex(" ")}')
 
         master_secret = math.prf(connection.digestmod, connection.premaster_secret, label, seed, 48)
-        logger.debug(f'master secret {master_secret.hex(" ")}')
+        logger.info(f'master secret {master_secret.hex(" ")}')
 
-        logger.error(f'master secret {bytes(master_secret)}')
-        logger.error(f'client random {connection.security_params.client_random}')
-        logger.error(f'server random {connection.security_params.server_random}')
+        # logger.error(f'master secret {bytes(master_secret)}')
+        logger.info(f'client random {connection.security_params.client_random.hex(" ")}')
+        logger.info(f'server random {connection.security_params.server_random.hex(" ")}')
         connection.premaster_secret = b''
         return master_secret
 
