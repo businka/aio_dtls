@@ -6,7 +6,7 @@ from .connection_manager.connection_manager import ConnectionManager
 from .const import handshake as const_handshake
 from .const import tls as const_tls
 from .constructs import tls
-from .exceptions import BadMAC, TLSException
+from .exceptions import BadMAC, TLSException, UnsupportedCipher, UnsupportedSslVersion
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,16 @@ class Protocol2:
             handler = f'received_{str(record.type).lower()}'
             logger.debug(f'processed {handler}')
 
-            answer = getattr(self, handler)(record)
-            if answer:
+            try:
+                answer = getattr(self, handler)(record)
+                if answer:
+                    answers.extend(answer)
+            except (UnsupportedCipher, UnsupportedSslVersion):
+                answer = [
+                    self.protocol_helper.build_alert(self.connection, const_tls.AlertLevel.FATAL,
+                                                     const_tls.AlertDescription.HANDSHAKE_FAILURE)]
+                self.connection_manager.close_connection(self.connection)
+                logger.info('terminate connection')
                 answers.extend(answer)
 
         # todo как минимум надо проверять размер ответа

@@ -9,7 +9,7 @@ from enum import Enum
 from cryptography.hazmat.primitives import hashes
 
 from ..cipher import cipher
-from ..exceptions import UnsupportedCipherException
+from ..exceptions import UnsupportedCipher
 
 
 # from .cryptographic_primitive import cryptography_primitives
@@ -526,6 +526,6 @@ def select_preferred_cipher_suite(client_supported, server_supported):
         if i in client_supported:
             return i
 
-    raise UnsupportedCipherException(
+    raise UnsupportedCipher(
         "Client supported ciphersuites are not supported on the server."
     )

@@ -9,7 +9,7 @@ from ..connection_manager.connection_manager import ConnectionManager
 from ..const import tls as const_tls
 from ..const.cipher_suites import CipherSuite, CipherSuites
 from ..constructs import tls
-from ..exceptions import BadMAC
+from ..exceptions import BadMAC, UnsupportedCipher, UnsupportedSslVersion
 
 logger = logging.getLogger(__name__)
 
@@ -110,12 +110,17 @@ class Handshake:
 
         connection_manager.new_server_connection(connection, record)
 
-        # todo сделать выбор протокола, отказ от обсуживания
-        connection.ssl_version = connection_manager.ssl_versions.get_best([record.fragment.fragment.client_version])
+        # todo сделать выбор протокола, отказ от обслуживания
+        best_ssl_version = connection_manager.ssl_versions.get_best([record.fragment.fragment.client_version])
+        if not best_ssl_version:
+            raise UnsupportedSslVersion(record.fragment.fragment.client_version)
+        connection.ssl_version = best_ssl_version
 
         connection.security_params.client_random = client_hello_data.random
 
         best_cipher = connection_manager.ciphers.get_best(client_hello_data.cipher_suites)
+        if not best_cipher:
+            raise UnsupportedCipher(client_hello_data.cipher_suites)
         connection.cipher = best_cipher
         # todo добавить проверку если нет подходящего
 

@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='aio_dtls',
-    version='0.0.3',  # __version__,
+    version='0.0.4',  # __version__,
     test_requires=[],
     url='https://github.com/businka/aio_dtls',
     license='MIT',

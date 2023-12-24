@@ -13,3 +13,10 @@ class CipherSuites(EnumProps):
         'TLS_ECDH_anon_WITH_AES_128_CBC_SHA256'
     ]
     EnumClass = EnumCipherSuites
+
+    @staticmethod
+    def _it_suitable(value, **kwargs):
+        psk = kwargs.get('psk')
+        if not psk and value.name.upper().find('PSK') >= 0:
+            return False
+        return True

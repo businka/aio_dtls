@@ -23,6 +23,7 @@ class EcdhePsk(TlsEcdhAnon):
         super().received_server_key_exchange(connection_manager, connection, record)
         print('hint', record.fragment.fragment.psk_identity_hint.hex(" "))
         if record.fragment.fragment.psk_identity_hint != connection.user_props['identity_hint']:
+            print('!!! bad psk identity hint !!!')
             pass  # todo кидать алерт если не равны
         pass
 

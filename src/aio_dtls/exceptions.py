@@ -13,11 +13,15 @@ class TLSException(Exception):
     """
 
 
-class UnsupportedCipherException(TLSException):
+class UnsupportedCipher(TLSException):
     pass
 
 
-class UnsupportedExtensionException(TLSException):
+class UnsupportedSslVersion(TLSException):
+    pass
+
+
+class UnsupportedExtension(TLSException):
     pass
 
 

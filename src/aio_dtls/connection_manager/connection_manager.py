@@ -28,7 +28,7 @@ class ConnectionManager:
         self.ssl_versions = SSlVersions(ssl_versions, is_dtls)
         self.elliptic_curves = EllipticCurves(elliptic_curves)
         self.ec_point_formats = ECPointFormats(ec_point_formats)
-        self.ciphers = CipherSuites(ciphers)
+        self.ciphers = CipherSuites(ciphers, psk=psk)
         self.compression_methods = CompressionMethods(compression_methods)
         self.signature_scheme = SignatureScheme(signature_scheme)
         self.private_key = None

@@ -13,8 +13,8 @@ class EnumProps:
     supported = []
     EnumClass = Default
 
-    def __init__(self, wish_list=None):
-        self._available: List[Tuple[str, int]] = self._init_from_list(wish_list)
+    def __init__(self, wish_list=None, **kwargs):
+        self._available: List[Tuple[str, int]] = self._init_from_list(wish_list, **kwargs)
         pass
 
     @property
@@ -29,14 +29,19 @@ class EnumProps:
     def available_values(self):
         return [hash(item[1]) for item in self._available]
 
-    def _init_from_list(self, wish_list):
+    @staticmethod
+    def _it_suitable(value, **kwargs):
+        return True
+
+    def _init_from_list(self, wish_list, **kwargs) -> List[Tuple[str, int]]:
         _result = []
         if wish_list is None:
             wish_list = self.supported
         for elem in wish_list:
             try:
                 prop = self.EnumClass[elem]
-                _result.append((prop.name, prop.value))
+                if self._it_suitable(prop, **kwargs):
+                    _result.append((prop.name, prop.value))
             except KeyError:
                 logger.warning(f'{self.__class__.__name__} not supported {elem}')
         _result = sorted(_result, key=lambda x: hash(x[1]), reverse=True)
